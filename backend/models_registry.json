@@ -1,0 +1,6 @@
+{
+    "Riga-Pro": {
+        "command": "llama3",
+        "type": "ollama"
+    }
+}

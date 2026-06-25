@@ -1,0 +1,126 @@
+.artifact-panel {
+  width: 50%;
+  min-width: 400px;
+  max-width: 800px;
+  height: 100vh;
+  background-color: var(--bg-primary);
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.2);
+  z-index: 20;
+}
+
+.artifact-header {
+  height: 60px;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+}
+
+.artifact-tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.tab.active {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  box-shadow: inset 0 -2px 0 var(--accent-primary);
+}
+
+.artifact-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.close-btn:hover {
+  color: #ef4444; /* red */
+}
+
+.artifact-content {
+  flex: 1;
+  overflow-y: auto;
+  background-color: #1e1e1e; /* VS Code dark background for code */
+  position: relative;
+}
+
+.artifact-code {
+  margin: 0 !important;
+  padding: 1.5rem !important;
+  min-height: 100%;
+  font-size: 0.95rem !important;
+  border-radius: 0 !important;
+}
+
+.artifact-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 2rem;
+}
+
+.empty-icon {
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.artifact-empty p {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.artifact-empty span {
+  font-size: 0.9rem;
+}
+
+@media (max-width: 1024px) {
+  .artifact-panel {
+    position: absolute;
+    right: 0;
+    width: 100%;
+    min-width: 100%;
+  }
+}

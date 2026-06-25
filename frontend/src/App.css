@@ -1,0 +1,75 @@
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: var(--bg-primary);
+  position: relative;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-width: 0; /* Important for flex children with text-overflow */
+}
+
+.input-section {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, var(--bg-primary) 60%, transparent);
+  padding-top: 2rem;
+  z-index: 10;
+}
+
+.mobile-header {
+  display: none;
+  height: 60px;
+  align-items: center;
+  padding: 0 1rem;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+}
+
+.menu-btn {
+  color: var(--text-primary);
+  margin-right: 1rem;
+}
+
+.mobile-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9;
+}
+
+@media (max-width: 768px) {
+  .mobile-header {
+    display: flex;
+  }
+  
+  .main-content {
+    padding-top: 60px; /* Offset for mobile header */
+  }
+
+  .mobile-overlay {
+    display: block;
+  }
+}
