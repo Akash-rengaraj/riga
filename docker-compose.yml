@@ -1,0 +1,13 @@
+version: '3.3'
+services:
+  stirling-pdf:
+    image: frooodle/s-pdf:latest
+    ports:
+      - '8081:8080' # Port 8080 is often used by llama-serve, so we bind to 8081
+    volumes:
+      - ./stirling-pdf-data/trainingData:/usr/share/tessdata # Required for extra OCR languages
+      - ./stirling-pdf-data/extraConfigs:/configs
+      - ./stirling-pdf-data/customFiles:/customFiles/
+    environment:
+      - DOCKER_ENABLE_SECURITY=false
+      - INSTALL_BOOK_AND_ADVANCED_HTML_OPS=false

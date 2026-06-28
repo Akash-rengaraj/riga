@@ -64,6 +64,8 @@ const ChatArea = ({ messages, isTyping, selectedModel, onModelSelect, models }) 
                   key={index} 
                   message={msg.text} 
                   isAi={msg.isAi} 
+                  isGenerating={msg.isGenerating}
+                  attachedFiles={msg.attached_files}
                 />
               ))}
               {isTyping && (

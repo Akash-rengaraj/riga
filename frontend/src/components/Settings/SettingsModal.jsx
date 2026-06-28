@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, X, Database, Plus, Check, Server, Trash2, Edit2 } from 'lucide-react';
+import { Settings, X, Database, Plus, Check, Server, Trash2, Edit2, Play, Square } from 'lucide-react';
 import './SettingsModal.css';
 
 const SettingsModal = ({ isOpen, onClose, models, fetchModels, onModelSelect, selectedModel }) => {
@@ -45,13 +45,18 @@ const SettingsModal = ({ isOpen, onClose, models, fetchModels, onModelSelect, se
       return;
     }
 
+    let finalCommand = newCommand.trim();
+    if (newType === 'ollama' && finalCommand.startsWith('ollama run ')) {
+      finalCommand = finalCommand.replace('ollama run ', '').trim();
+    }
+
     try {
       const res = await fetch('http://127.0.0.1:8000/api/models', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: newName,
-          command: newCommand,
+          command: finalCommand,
           type: newType
         })
       });
@@ -103,6 +108,32 @@ const SettingsModal = ({ isOpen, onClose, models, fetchModels, onModelSelect, se
         }
   };
 
+  const handleStartServer = async (modelName) => {
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/api/models/${modelName}/start`, { method: 'POST' });
+      if (res.ok) {
+        await fetchModels();
+        setError('');
+      } else {
+        const data = await res.json();
+        setError(data.detail || 'Failed to start');
+      }
+    } catch (err) { setError('Failed to connect to backend.'); }
+  };
+
+  const handleStopServer = async (modelName) => {
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/api/models/${modelName}/stop`, { method: 'POST' });
+      if (res.ok) {
+        await fetchModels();
+        setError('');
+      } else {
+        const data = await res.json();
+        setError(data.detail || 'Failed to stop');
+      }
+    } catch (err) { setError('Failed to connect to backend.'); }
+  };
+
   return (
     <div className="settings-overlay">
       <div className="settings-modal glass-panel">
@@ -140,12 +171,14 @@ const SettingsModal = ({ isOpen, onClose, models, fetchModels, onModelSelect, se
                 />
                 <input 
                   type="text" 
-                  placeholder="Command/Tag (e.g. llama3)" 
+                  placeholder={newType === 'openai' ? "Base URL (e.g. http://localhost:8080)" : (newType === 'llama-serve' ? "e.g. llama serve -hf empero-ai/..." : "Command/Tag (e.g. llama3)")} 
                   value={newCommand}
                   onChange={(e) => setNewCommand(e.target.value)}
                 />
                 <select value={newType} onChange={(e) => setNewType(e.target.value)}>
                   <option value="ollama">Ollama</option>
+                  <option value="openai">OpenAI Compatible</option>
+                  <option value="llama-serve">Managed Server (llama serve)</option>
                   <option value="native">Native Binary (CLI)</option>
                 </select>
                 {error && <div className="registry-error">{error}</div>}
@@ -172,6 +205,25 @@ const SettingsModal = ({ isOpen, onClose, models, fetchModels, onModelSelect, se
                     <span className="model-type-badge">{models[modelName].type}</span>
                   </div>
                   <div className="model-actions">
+                    {models[modelName].type === 'llama-serve' && (
+                       models[modelName].status === 'running' ? (
+                         <button 
+                           className="icon-btn stop-btn" 
+                           onClick={() => handleStopServer(modelName)}
+                           title="Stop Server"
+                         >
+                           <Square size={14} />
+                         </button>
+                       ) : (
+                         <button 
+                           className="icon-btn start-btn" 
+                           onClick={() => handleStartServer(modelName)}
+                           title="Start Server"
+                         >
+                           <Play size={14} />
+                         </button>
+                       )
+                    )}
                     <button 
                         className="icon-btn edit-btn" 
                         onClick={() => handleEdit(modelName, models[modelName])}

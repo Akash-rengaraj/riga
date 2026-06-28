@@ -3,10 +3,10 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Bot, User, Copy, Check } from 'lucide-react';
+import { Bot, User, Copy, Check, FileText, Image as ImageIcon, Video, Music } from 'lucide-react';
 import './MessageBubble.css';
 
-const MessageBubble = ({ message, isAi, isTyping }) => {
+const MessageBubble = ({ message, isAi, isTyping, isGenerating, attachedFiles }) => {
   const [copied, setCopied] = React.useState(false);
 
   const handleCopy = (text) => {
@@ -28,11 +28,42 @@ const MessageBubble = ({ message, isAi, isTyping }) => {
           </div>
         )}
       </div>
-      <div className="message-content-wrapper">
+            <div className="message-content-wrapper">
         <div className="message-header">
           <span className="sender-name">{isAi ? 'Riga AI' : 'You'}</span>
         </div>
         <div className={`message-bubble ${isAi ? 'glass-panel' : ''}`}>
+          
+          {/* Render attached files if present */}
+          {attachedFiles && attachedFiles.length > 0 && (
+            <div className="message-attachments">
+                {attachedFiles.map((file, idx) => {
+                    if (file.type === 'image') {
+                        return (
+                            <div key={idx} className="attachment-image-wrapper">
+                                <img 
+                                    src={`http://127.0.0.1:8000/${file.filepath}`} 
+                                    alt={file.original_name} 
+                                    className="attachment-image" 
+                                />
+                            </div>
+                        );
+                    }
+                    
+                    let Icon = FileText;
+                    if (file.type === 'video') Icon = Video;
+                    if (file.type === 'audio') Icon = Music;
+
+                    return (
+                        <div key={idx} className="attachment-chip">
+                            <Icon size={14} />
+                            <span className="attachment-name">{file.original_name}</span>
+                        </div>
+                    );
+                })}
+            </div>
+          )}
+
           {isTyping ? (
             <div className="typing-indicator">
               <span></span><span></span><span></span>
@@ -84,6 +115,7 @@ const MessageBubble = ({ message, isAi, isTyping }) => {
             >
               {message || ''}
               </ReactMarkdown>
+              {isGenerating && <span className="blinking-cursor"></span>}
             </div>
           ) : (
             <p>{message}</p>

@@ -85,12 +85,14 @@ const ModelRegistry = ({ onModelSelect, selectedModel }) => {
           />
           <input 
             type="text" 
-            placeholder="Command/Tag (e.g. llama3)" 
+            placeholder={newType === 'openai' ? "Base URL (e.g. http://localhost:8080)" : (newType === 'llama-serve' ? "e.g. llama serve -hf empero-ai/..." : "Command/Tag (e.g. llama3)")} 
             value={newCommand}
             onChange={(e) => setNewCommand(e.target.value)}
           />
           <select value={newType} onChange={(e) => setNewType(e.target.value)}>
             <option value="ollama">Ollama</option>
+            <option value="openai">OpenAI Compatible</option>
+            <option value="llama-serve">Managed Server (llama serve)</option>
             <option value="native">Native Binary (CLI)</option>
           </select>
           {error && <div className="registry-error">{error}</div>}

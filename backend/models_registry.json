@@ -2,5 +2,13 @@
     "Riga-Pro": {
         "command": "llama3",
         "type": "ollama"
+    },
+    "Llama3.2:Latest": {
+        "command": "llama3.2:latest",
+        "type": "ollama"
+    },
+    "Qwythos 9B": {
+        "command": "llama serve -hf empero-ai/Qwythos-9B-Claude-Mythos-5-1M-GGUF:Q4_K_M",
+        "type": "llama-serve"
     }
 }

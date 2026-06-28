@@ -10,6 +10,7 @@ import './App.css';
 function App() {
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [isArtifactOpen, setIsArtifactOpen] = useState(false);
   const [artifactContent, setArtifactContent] = useState('');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -31,6 +32,7 @@ function App() {
         abortControllerRef.current.abort();
         abortControllerRef.current = null;
         setIsTyping(false);
+        setIsGenerating(false);
     }
     setSelectedModel(modelName);
   };
@@ -149,7 +151,7 @@ function App() {
     setMobileSidebarOpen(false);
   };
 
-  const handleSendMessage = useCallback(async (text) => {
+  const handleSendMessage = useCallback(async (text, attachedFiles = []) => {
     if (!selectedModel) {
       alert("Please select or register a model first.");
       return;
@@ -161,12 +163,12 @@ function App() {
     // Generate ID and Title for new chat
     if (!convId) {
       convId = crypto.randomUUID();
-      title = text.slice(0, 30) + (text.length > 30 ? '...' : '');
+      title = text ? text.slice(0, 30) + (text.length > 30 ? '...' : '') : 'New Chat';
       setCurrentConversationId(convId);
       currentTitleRef.current = title;
     }
 
-    const userMessage = { text, isAi: false };
+    const userMessage = { text, isAi: false, attached_files: attachedFiles };
     
     // We need the updated array for saving
     let updatedMessagesForSave = [];
@@ -179,6 +181,7 @@ function App() {
     });
 
     setIsTyping(true);
+    setIsGenerating(true);
 
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -193,7 +196,8 @@ function App() {
         body: JSON.stringify({
           model_name: selectedModel,
           prompt: text,
-          conv_id: convId
+          conv_id: convId,
+          attached_files: attachedFiles
         })
       });
 
@@ -201,11 +205,11 @@ function App() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      setIsTyping(false);
+      setIsTyping(false); // First byte received, stop TTFB typing indicator
 
       // Create a new AI message placeholder
       let aiText = '';
-      setMessages((prev) => [...prev, { text: '', isAi: true }]);
+      setMessages((prev) => [...prev, { text: '', isAi: true, isGenerating: true }]);
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
@@ -240,7 +244,7 @@ function App() {
               // Update the last message (the AI message) with accumulated text
               setMessages((prev) => {
                 const updated = [...prev];
-                updated[updated.length - 1] = { text: aiText, isAi: true };
+                updated[updated.length - 1] = { text: aiText, isAi: true, isGenerating: true };
                 updatedMessagesForSave = updated; // Keep track for final save
                 return updated;
               });
@@ -252,6 +256,17 @@ function App() {
         }
       }
       
+      // Stream complete
+      setIsGenerating(false);
+      setMessages((prev) => {
+        const updated = [...prev];
+        if (updated.length > 0) {
+            updated[updated.length - 1] = { ...updated[updated.length - 1], isGenerating: false };
+            updatedMessagesForSave = updated;
+        }
+        return updated;
+      });
+
       // Save final conversation state after stream finishes
       saveConversation(convId, title, updatedMessagesForSave);
 
@@ -277,17 +292,36 @@ function App() {
     } catch (error) {
       if (error.name === 'AbortError') {
         console.log('Stream aborted by user or model switch.');
+        setIsGenerating(false);
+        setMessages((prev) => {
+            const updated = [...prev];
+            if (updated.length > 0) {
+                updated[updated.length - 1] = { ...updated[updated.length - 1], isGenerating: false };
+                updatedMessagesForSave = updated;
+            }
+            return updated;
+        });
+        saveConversation(convId, title, updatedMessagesForSave);
         return;
       }
       console.error("Stream error:", error);
       setIsTyping(false);
+      setIsGenerating(false);
       setMessages((prev) => {
-        const errMessages = [...prev, { text: `**Error communicating with backend:** ${error.message}`, isAi: true }];
+        const errMessages = [...prev, { text: `**Error communicating with backend:** ${error.message}`, isAi: true, isGenerating: false }];
         saveConversation(convId, title, errMessages);
         return errMessages;
       });
     }
   }, [selectedModel, currentConversationId, isArtifactOpen]);
+
+  const handleStopGeneration = useCallback(() => {
+    if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        setIsTyping(false);
+        setIsGenerating(false);
+    }
+  }, []);
 
   return (
     <div className="app-container">
@@ -324,6 +358,8 @@ function App() {
           <InputArea 
             onSendMessage={handleSendMessage} 
             isChatEmpty={messages.length === 0}
+            isGenerating={isGenerating}
+            onStopGeneration={handleStopGeneration}
           />
         </div>
       </div>
